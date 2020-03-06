@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kojihub-ingress
+  labels:
+    app: koji
+  annotations:
+    kubernetes.io/ingress.class: 'traefik'
+spec:
+  rules:
+  - host: hqswarm3-node3
+    http:
+      paths:
+      - backend:
+          serviceName: kojihub-service
+          servicePort: 80
+

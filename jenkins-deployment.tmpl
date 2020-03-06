@@ -1,0 +1,62 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: koji-jenkins
+  labels:
+    app: koji
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: koji
+  template:
+    metadata:
+      labels:
+        app: koji
+    spec:
+      hostAliases:
+      - ip: 10.40.0.50
+        hostnames:
+        - gitcentos.mvista.com
+      - ip: 10.40.5.50
+        hostnames:
+        - centos7mirror.mvista.com
+      containers:
+        - name: koji-jenkins
+          image: yufenkuo/koji-jenkins:latest
+          ports:
+            - name: web-interface
+              containerPort: 8080
+              protocol: TCP
+            - name: remote-java
+              containerPort: 50000
+              protocol: TCP
+
+          env:
+          - name: HOST
+            value: "${KOJI_HUB_HOST_IP}"
+          - name: GIT_HOST_IP
+            value: "10.40.0.50"
+          - name: TZ
+            value: "${SYSTEM_TZ}"
+          - name: JENKINS_EXECUTORS
+            value: "${JENKINS_EXECUTORS}"
+          - name: JAVA_OPTS
+            value: "-Djenkins.install.runSetupWizard=false"
+          - name: JENKINS_HOSTNAME
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: DISTRO_APP_BRANCH
+            value: "${COMMON_BUILD_BRANCH}"
+          - name: DISTRO_COMMON_BRANCH
+            value: "${COMMON_BUILD_BRANCH}"
+          volumeMounts:
+          - mountPath: /var/jenkins_home
+            name: jenkins-home
+      volumes:
+      - name: jenkins-home
+        hostPath:
+           path: /jenkins
+           type: Directory
+      restartPolicy: Always

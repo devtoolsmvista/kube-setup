@@ -1,0 +1,86 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: koji
+  labels:
+    app: koji
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: koji
+  template:
+    metadata:
+      labels:
+        app: koji
+    spec:
+      hostAliases:
+      - ip: 10.40.0.50
+        hostnames:
+        - gitcentos.mvista.com
+      - ip: 10.40.5.50
+        hostnames:
+        - centos7mirror.mvista.com
+      containers:
+        - name: koji-db
+          image: postgres:9.4
+          ports:
+            - name: postgres-port
+              containerPort: 5432
+          envFrom:
+          - configMapRef:
+              name: postgres-config
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgredb
+        - name: koji-hub
+          image: yufenkuo/koji-hub
+          ports:
+            - name: http-port
+              containerPort: 80
+              protocol: TCP
+            - name: https-port
+              containerPort: 443
+              protocol: TCP
+          envFrom:
+          - configMapRef:
+              name: kojihub-config
+          env:
+          - name: KOJI_DB
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: KOJI_HUB_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          volumeMounts:
+          - mountPath: /srv
+            name: kojihub-srv
+          - mountPath: /config
+            name: kojihub-config
+          - mountPath: /root/saved/etc/pki/koji
+            name: kojihub-savedetc
+      volumes:
+      - name: postgredb
+        persistentVolumeClaim:
+           claimName: postgres-pv-claim
+      - name: kojihub-srv
+        persistentVolumeClaim:
+           claimName: kojihubsrv-pv-claim
+      - name: kojihub-config
+        persistentVolumeClaim:
+           claimName: kojihubconfig-pv-claim
+      - name: kojihub-savedetc
+        persistentVolumeClaim:
+           claimName: kojihubsavedetc-pv-claim
+      - name: runscripts
+        hostPath:
+           path: /tmp/koji-setup/koji-jenkins-setup/run-scripts2
+           type: Directory
+      - name: builds
+        hostPath:
+           path: /builds/centos7/release/centos-7.6
+           type: Directory
+
+      restartPolicy: Always

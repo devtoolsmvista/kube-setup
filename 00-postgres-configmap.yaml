@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: koji
+data:
+  POSTGRES_DB: koji
+  POSTGRES_USER: koji
+  POSTGRES_PASSWORD: mypassword
+

@@ -1,0 +1,53 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: koji-client
+  labels:
+    app: koji
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: koji
+  template:
+    metadata:
+      labels:
+        app: koji
+    spec:
+      hostAliases:
+      - ip: 10.40.0.50
+        hostnames:
+        - gitcentos.mvista.com
+      - ip: 10.40.5.50
+        hostnames:
+        - centos7mirror.mvista.com
+      containers:
+        - name: koji-client
+          image: yufenkuo/koji-client
+          env:
+          - name: HOST
+            value: ${KOJI_HUB_HOST_IP}
+          - name: KOJI_MOCK
+            value: ${KOJI_MOCK}
+          - name: KOJI_SCMS
+            value: ${KOJI_SCMS}
+          volumeMounts:
+          - mountPath: /opt/koji-clients
+            name: kojihub-config
+          - mountPath: /root/run-scripts
+            name: runscripts
+          - mountPath: /builds
+            name: builds
+      volumes:
+      - name: kojihub-config
+        persistentVolumeClaim:
+           claimName: kojihubconfig-pv-claim
+      - name: runscripts
+        hostPath:
+           path: ${TOPDIR}/koji-jenkins-setup/run-scripts2
+           type: Directory
+      - name: builds
+        hostPath:
+           path: /builds/centos7/release/centos-7.6
+           type: Directory
+      restartPolicy: Always

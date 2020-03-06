@@ -1,0 +1,15 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: kojiweb
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`hqswarm3-node3`)
+      kind: Rule
+      services:
+      - name: kojihub-service
+        port: 80
+

@@ -1,0 +1,16 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: kojiwebtcp
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: HostSNI(`hqswarm3-node3`)
+      kind: Rule
+      services:
+      - name: kojihub-service
+        port: 443
+  tls:
+    passthrough: true
+

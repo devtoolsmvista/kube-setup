@@ -1,0 +1,90 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: kojihubsrv-pv-volume
+  labels:
+    type: local
+    app: koji
+spec:
+  storageClassName: kojihubsrv-storageclass
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/srv"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kojihubsrv-pv-claim
+  labels:
+    app: koji
+spec:
+  storageClassName: kojihubsrv-storageclass
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 8Gi
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: kojihubconfig-pv-volume
+  labels:
+    type: local
+    app: koji
+spec:
+  storageClassName: kojihubconfig-storageclass
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/koji/config"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kojihubconfig-pv-claim
+  labels:
+    app: koji
+spec:
+  storageClassName: kojihubconfig-storageclass
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: kojihubsavedetc-pv-volume
+  labels:
+    type: local
+    app: koji
+spec:
+  storageClassName: kojihubsavedetc-storageclass
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/koji/saved/etc/pki/koji"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kojihubsavedetc-pv-claim
+  labels:
+    app: koji
+spec:
+  storageClassName: kojihubsavedetc-storageclass
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---

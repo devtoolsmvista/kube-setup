@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jenkins-ingress
+  labels:
+    app: koji
+  annotations:
+    kubernetes.io/ingress.class: 'traefik'
+    traefik.frontend.rule.type: PathPrefixStrip
+spec:
+  rules:
+  - host: jenkins.localhost
+    http:
+      paths:
+      - backend:
+          serviceName: jenkins-service
+          servicePort: 8080
+

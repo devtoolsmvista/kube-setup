@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kojihub-config
+  labels:
+    app: koji
+data:
+  GIT_HOST_IP: ${GIT_HOST_IP}
+  MIRROR_HOST_IP: ${MIRROR_HOST_IP}
+  GIT_BRANCH: koji-1.18-updates
+  KOJI_PACKAGER: ${KOJI_PACKAGER}
+  KOJI_VENDOR: ${KOJI_VENDOR}
+  KOJI_OUTPUT: ${KOJI_OUTPUT}
+  DO_INSTALLATION: "${DO_INSTALLATION}"
+

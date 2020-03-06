@@ -1,0 +1,56 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: koji-builder
+  labels:
+    app: koji
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: koji
+  template:
+    metadata:
+      labels:
+        app: koji
+    spec:
+      hostAliases:
+      - ip: 10.40.0.50
+        hostnames:
+        - gitcentos.mvista.com
+      - ip: 10.40.5.50
+        hostnames:
+        - centos7mirror.mvista.com
+      containers:
+        - name: koji-builder
+          image: jpuhlman/koji-builder
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+          env:
+          - name: KOJI_HOST
+            value: ${KOJI_HUB_HOST_IP}
+          - name: HOST_IP
+            value: ${KOJI_HUB_HOST_IP}
+          - name: KOJI_BUILDER
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: KOJI_SCMS
+            value: ${KOJI_SCMS}
+          volumeMounts:
+          - mountPath: /var/lib/mock
+            name: koji-mock
+          - mountPath: /srv
+            name: koji-srv
+      volumes:
+      - name: koji-mock
+        hostPath:
+           path: ${KOJI_MOCK}
+           type: Directory
+      - name: koji-srv
+        hostPath:
+           path: /srv
+           type: Directory
+      restartPolicy: Always
