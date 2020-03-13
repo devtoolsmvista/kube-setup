@@ -15,10 +15,10 @@ spec:
         app: koji
     spec:
       hostAliases:
-      - ip: 10.40.0.50
+      - ip: ${GIT_HOST_IP}
         hostnames:
         - gitcentos.mvista.com
-      - ip: 10.40.5.50
+      - ip: ${MIRROR_HOST_IP}
         hostnames:
         - centos7mirror.mvista.com
       containers:
@@ -36,7 +36,7 @@ spec:
           - name: HOST
             value: "${KOJI_HUB_HOST_IP}"
           - name: GIT_HOST_IP
-            value: "10.40.0.50"
+            value: ${GIT_HOST_IP}
           - name: TZ
             value: "${SYSTEM_TZ}"
           - name: JENKINS_EXECUTORS
