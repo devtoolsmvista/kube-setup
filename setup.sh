@@ -5,15 +5,6 @@ SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 TOPDIR=/tmp/koji-setup
 KOJI_JENKINS_SETUP_REPO=git://gitcentos.mvista.com/centos/upstream/docker/koji-jenkins-setup.git
 
-# Docker Stack names 
-STACK_KOJI=koji
-
-#Docker images
-IMAGE_KOJI_DB="postgres:9.4"
-IMAGE_KOJI_HUB="yufenkuo/koji-hub:latest"
-IMAGE_KOJI_BUILDER="yufenkuo/builder-launcher:latest"
-IMAGE_KOJI_JENKINS="yufenkuo/koji-jenkins:latest"
-IMAGE_KOJI_CLIENT="yufenkuo/koji-client:latest"
 
 if [ -z "$HOST" ] ; then
     echo Please export HOST as the fully qualified domain name
@@ -33,11 +24,13 @@ if [ -z "$MIRROR_HOST_IP" ] ; then
     export MIRROR_HOST_IP="$(hostname -i)"
 fi
 
+
 if ! ping $HOST -c 1 >/dev/null 2>/dev/null; then
     echo "$HOST does not appear to be reachable from this machine."
     echo "if ping does not work, it won't work in the container and will fail to start"
     exit 1
 fi
+
 if ! ping $GIT_HOST_IP -c 1 >/dev/null 2>/dev/null; then
     echo "$GIT_HOST_IP does not appear to be reachable from this machine."
     echo "if ping does not work, it won't work in the container and will fail to start"
@@ -136,16 +129,18 @@ startup_koji_hub () {
   kubectl apply -f ${SCRIPT_DIR}/01-postgres-storage.yaml
   cat ${SCRIPT_DIR}/02-kojihub-configmap.tmpl | envsubst | kubectl apply -f -
   kubectl apply -f ${SCRIPT_DIR}/03-kojihub-storage.yaml
-  kubectl apply -f ${SCRIPT_DIR}/04-koji-deployment.yaml
+  cat ${SCRIPT_DIR}/04-koji-deployment.tmpl | envsubst | kubectl apply -f -
+  #kubectl apply -f ${SCRIPT_DIR}/04-koji-deployment.yaml
   kubectl apply -f ${SCRIPT_DIR}/05-postgres-service.yaml
   kubectl apply -f ${SCRIPT_DIR}/06-kojihub-service.yaml
-  #kubectl apply -f ${SCRIPT_DIR}/07-kojihub-ingress.yaml
 
   while [ ! -e $KOJI_CONFIG/.done -a ! -e $KOJI_CONFIG/.failed ] ; do
 	echo -n "."
 	sleep 10 
   done
 
+  # setup koji-hub ingress controller
+  kubectl apply -f ${SCRIPT_DIR}/07-kojihub-ingress.yaml
   # dynamically get koji host ip
   KOJI_HUB_HOST_IP="$(kubectl get pods -o wide |grep koji | awk '{print $6}')"
 
@@ -179,8 +174,6 @@ startup_koji_builder () {
   if [ ! -d "$KOJI_MOCK" ]; then
     mkdir -p $KOJI_MOCK
   fi
-  # dynamically get koji host ip
-  #KOJI_HUB_HOST_IP="$(kubectl get pods -o wide |grep koji | awk '{print $6}')"
   echo "${KOJI_HUB_HOST_IP}"
   KOJI_MOCK=${KOJI_MOCK} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/09-kojibuilder-deployment.tmpl > ${SCRIPT_DIR}/09-kojibuilder-deployment.yaml
   kubectl apply -f ${SCRIPT_DIR}/09-kojibuilder-deployment.yaml
@@ -213,10 +206,11 @@ EOF
 startup_jenkins_container () {
 
   echo "${KOJI_HUB_HOST_IP}"
-  KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/jenkins-deployment.tmpl > ${SCRIPT_DIR}/jenkins-deployment.yaml
-  kubectl apply -f ${SCRIPT_DIR}/jenkins-deployment.yaml
+  KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/11-jenkins-deployment.tmpl > ${SCRIPT_DIR}/11-jenkins-deployment.yaml
+  kubectl apply -f ${SCRIPT_DIR}/11-jenkins-deployment.yaml
   sleep 10
-  exit 0
+  kubectl apply -f ${SCRIPT_DIR}/12-jenkins-service.yaml
+  kubectl apply -f ${SCRIPT_DIR}/13-nginx-jenkins-ingress.yaml
 }
 
 
@@ -237,7 +231,6 @@ else
   sleep 3
   cd $TOPDIR/koji-jenkins-setup
   source run-scripts/parameters.sh
-  rm_existing_docker_stack
   startup_koji_hub
   startup_koji_builder
   startup_jenkins_container

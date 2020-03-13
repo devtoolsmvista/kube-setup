@@ -1,15 +1,17 @@
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: extensions/v1beta1
+kind: Ingress
 metadata:
-  name: kojiweb
+  name: kojihub-ingress
+  labels:
+    app: koji
+  annotations:
+    kubernetes.io/ingress.class: nginx
 spec:
-  entryPoints:
-    - web
-  routes:
-    - match: Host(`hqswarm3-node3`)
-      kind: Rule
-      services:
-      - name: kojihub-service
-        port: 80
+  rules:
+  - host: hqswarm3-node3
+    http:
+      paths:
+      - backend:
+          serviceName: kojihub-service
+          servicePort: 80
 
