@@ -23,6 +23,10 @@ if [ -z "$MIRROR_HOST_IP" ] ; then
     MIRROR_HOST_IP="$(hostname -i)"
     export MIRROR_HOST_IP="$(hostname -i)"
 fi
+if [ -z "$COLLECTIVE_HOST_IP" ] ; then
+    COLLECTIVE_HOST_IP="$(hostname -i)"
+    export COLLECTIVE_HOST_IP="$(hostname -i)"
+fi
 
 
 if ! ping $HOST -c 1 >/dev/null 2>/dev/null; then
@@ -38,6 +42,11 @@ if ! ping $GIT_HOST_IP -c 1 >/dev/null 2>/dev/null; then
 fi
 if ! ping $MIRROR_HOST_IP -c 1 >/dev/null 2>/dev/null; then
     echo "$MIRROR_HOST_IP does not appear to be reachable from this machine."
+    echo "if ping does not work, it won't work in the container and will fail to start"
+    exit 1
+fi
+if ! ping $COLLECTIVE_HOST_IP -c 1 >/dev/null 2>/dev/null; then
+    echo "$COLLECTIVE_HOST_IP does not appear to be reachable from this machine."
     echo "if ping does not work, it won't work in the container and will fail to start"
     exit 1
 fi
@@ -142,7 +151,7 @@ startup_koji_hub () {
   # setup koji-hub ingress controller
   kubectl apply -f ${SCRIPT_DIR}/07-kojihub-ingress.yaml
   # dynamically get koji host ip
-  KOJI_HUB_HOST_IP="$(kubectl get pods -o wide |grep koji | awk '{print $6}')"
+  KOJI_HUB_HOST_IP="$(kubectl get pods -o wide |grep koji-hub | awk '{print $6}')"
 
   if [ -e $KOJI_CONFIG/.failed -a ! $KOJI_CONFIG/.done ] ; then
    echo "ERROR: Koji Hub start failed."

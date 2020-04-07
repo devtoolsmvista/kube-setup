@@ -1,18 +1,19 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: koji-client
+  name: koji-mash
+  namespace: mash
   labels:
-    app: koji
+    app: mash
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: koji
+      app: mash
   template:
     metadata:
       labels:
-        app: koji
+        app: mash
     spec:
       hostAliases:
       - ip: ${GIT_HOST_IP}
@@ -21,12 +22,22 @@ spec:
       - ip: ${MIRROR_HOST_IP}
         hostnames:
         - centos7mirror.mvista.com
-      - ip: ${COLLECTIVE_HOST_IP}
-        hostnames:
-        - centos7collective.mvista.com
       containers:
-        - name: koji-client
-          image: yufenkuo/koji-client
+        - name: koji-mash
+          image: yufenkuo/koji-mash
+          resources: 
+            limits:
+              cpu: "1"
+            requests:
+              cpu: "0.5"
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+          ports:
+            - name: http-port
+              containerPort: 80
+              protocol: TCP
           env:
           - name: HOST
             value: ${KOJI_HUB_HOST_IP}
@@ -37,17 +48,18 @@ spec:
           volumeMounts:
           - mountPath: /opt/koji-clients
             name: kojihub-config
-          - mountPath: /root/run-scripts
-            name: runscripts
+          - mountPath: /srv
+            name: srv
           - mountPath: /builds
             name: builds
       volumes:
       - name: kojihub-config
-        persistentVolumeClaim:
-           claimName: kojihubconfig-pv-claim
-      - name: runscripts
         hostPath:
-           path: ${TOPDIR}/koji-jenkins-setup/run-scripts2
+           path: /koji/config
+           type: Directory
+      - name: srv
+        hostPath:
+           path: /srv
            type: Directory
       - name: builds
         hostPath:

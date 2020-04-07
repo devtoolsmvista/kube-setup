@@ -1,0 +1,68 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: koji-mash
+  namespace: mash
+  labels:
+    app: mash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mash
+  template:
+    metadata:
+      labels:
+        app: mash
+    spec:
+      hostAliases:
+      - ip: 10.40.0.50
+        hostnames:
+        - gitcentos.mvista.com
+      - ip: 10.40.5.50
+        hostnames:
+        - centos7mirror.mvista.com
+      containers:
+        - name: koji-mash
+          image: yufenkuo/koji-mash
+          resources: 
+            limits:
+              cpu: "1"
+            requests:
+              cpu: "0.5"
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+          ports:
+            - name: http-port
+              containerPort: 80
+              protocol: TCP
+          env:
+          - name: HOST
+            value: 172.22.0.56
+          - name: KOJI_MOCK
+            value: /koji/mock
+          - name: KOJI_SCMS
+            value: gitcentos.mvista.com:/centos/upstream/packages/*:common:/chroot_tmpdir/scmroot/common/get_sources.sh
+          volumeMounts:
+          - mountPath: /opt/koji-clients
+            name: kojihub-config
+          - mountPath: /srv
+            name: srv
+          - mountPath: /builds
+            name: builds
+      volumes:
+      - name: kojihub-config
+        hostPath:
+           path: /koji/config
+           type: Directory
+      - name: srv
+        hostPath:
+           path: /srv
+           type: Directory
+      - name: builds
+        hostPath:
+           path: /builds/centos7/release/centos-7.6
+           type: Directory
+      restartPolicy: Always

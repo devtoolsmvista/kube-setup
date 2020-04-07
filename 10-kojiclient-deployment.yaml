@@ -15,13 +15,13 @@ spec:
         app: koji
     spec:
       hostAliases:
-      - ip: ${GIT_HOST_IP}
+      - ip: 10.40.0.50
         hostnames:
         - gitcentos.mvista.com
-      - ip: ${MIRROR_HOST_IP}
+      - ip: 10.40.5.50
         hostnames:
         - centos7mirror.mvista.com
-      - ip: ${COLLECTIVE_HOST_IP}
+      - ip: 10.40.4.102
         hostnames:
         - centos7collective.mvista.com
       containers:
@@ -29,11 +29,11 @@ spec:
           image: yufenkuo/koji-client
           env:
           - name: HOST
-            value: ${KOJI_HUB_HOST_IP}
+            value: 172.22.0.56
           - name: KOJI_MOCK
-            value: ${KOJI_MOCK}
+            value: /koji/mock
           - name: KOJI_SCMS
-            value: ${KOJI_SCMS}
+            value: gitcentos.mvista.com:/centos/upstream/packages/*:common:/chroot_tmpdir/scmroot/common/get_sources.sh
           volumeMounts:
           - mountPath: /opt/koji-clients
             name: kojihub-config
@@ -47,7 +47,7 @@ spec:
            claimName: kojihubconfig-pv-claim
       - name: runscripts
         hostPath:
-           path: ${TOPDIR}/koji-jenkins-setup/run-scripts2
+           path: /tmp/koji-setup/koji-jenkins-setup/run-scripts2
            type: Directory
       - name: builds
         hostPath:

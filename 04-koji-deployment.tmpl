@@ -1,7 +1,7 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: koji
+  name: koji-hub
   labels:
     app: koji
 spec:
@@ -21,6 +21,9 @@ spec:
       - ip: ${MIRROR_HOST_IP}
         hostnames:
         - centos7mirror.mvista.com
+      - ip: ${COLLECTIVE_HOST_IP}
+        hostnames:
+        - centos7collective.mvista.com
       containers:
         - name: koji-db
           image: postgres:9.4
