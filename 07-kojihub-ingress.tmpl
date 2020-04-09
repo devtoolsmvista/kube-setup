@@ -8,7 +8,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: hqswarm3-node3
+  - host: ${KOJIHUB_INGRESS_HOSTNAME}
     http:
       paths:
       - backend:

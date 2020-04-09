@@ -7,25 +7,26 @@ KOJI_JENKINS_SETUP_REPO=git://gitcentos.mvista.com/centos/upstream/docker/koji-j
 
 
 if [ -z "$HOST" ] ; then
-    echo Please export HOST as the fully qualified domain name
-    echo export HOST=foo.mvista.com
-    exit 1
+    HOST="$(hostname -f)"
 fi
 if [ -z "$HOST_IP" ] ; then
     HOST_IP="$(hostname -i)"
     export HOST_IP="$(hostname -i)"
 fi
 if [ -z "$GIT_HOST_IP" ] ; then
-    GIT_HOST_IP="$(hostname -i)"
-    export GIT_HOST_IP="$(hostname -i)"
+    #GIT_HOST_IP="$(hostname -i)"
+    GIT_HOST_IP="10.40.0.50"
+    export GIT_HOST_IP=${GIT_HOST_IP}
 fi
 if [ -z "$MIRROR_HOST_IP" ] ; then
-    MIRROR_HOST_IP="$(hostname -i)"
-    export MIRROR_HOST_IP="$(hostname -i)"
+    #MIRROR_HOST_IP="$(hostname -i)"
+    MIRROR_HOST_IP="10.40.5.50"
+    export MIRROR_HOST_IP=${MIRROR_HOST_IP}
 fi
 if [ -z "$COLLECTIVE_HOST_IP" ] ; then
-    COLLECTIVE_HOST_IP="$(hostname -i)"
-    export COLLECTIVE_HOST_IP="$(hostname -i)"
+    #COLLECTIVE_HOST_IP="$(hostname -i)"
+    COLLECTIVE_HOST_IP="10.40.4.102"
+    export COLLECTIVE_HOST_IP=${COLLECTIVE_HOST_IP}
 fi
 
 
@@ -149,7 +150,7 @@ startup_koji_hub () {
   done
 
   # setup koji-hub ingress controller
-  kubectl apply -f ${SCRIPT_DIR}/07-kojihub-ingress.yaml
+  cat ${SCRIPT_DIR}/07-kojihub-ingress.tmpl | KOJIHUB_INGRESS_HOSTNAME="$(hostname -s)" envsubst | kubectl apply -f -
   # dynamically get koji host ip
   KOJI_HUB_HOST_IP="$(kubectl get pods -o wide |grep koji-hub | awk '{print $6}')"
 
