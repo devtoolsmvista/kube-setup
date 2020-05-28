@@ -162,17 +162,17 @@ startup_koji_hub () {
 bootstrap_build_in_koji_client_container() {
   mkdir -p $TOPDIR/koji-jenkins-setup/run-scripts2
   cp $TOPDIR/koji-jenkins-setup/run-scripts/* $TOPDIR/koji-jenkins-setup/run-scripts2
-  yes | cp -rf $SCRIPT_DIR/bootstrap-build.sh $TOPDIR/koji-jenkins-setup/run-scripts2
+  sed -i $TOPDIR/koji-jenkins-setup/run-scripts2/bootstrap-build.sh -e 's,$TOPDIR/run-scripts/fetch-previous.sh, ,'
 
   echo "${KOJI_HUB_HOST_IP}"
   TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
   kubectl apply -f ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
   sleep 30
   KOJI_CLIENT_POD_NAME="$(kubectl get pods -o wide |grep koji-client  | awk '{print $1}')"
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} koji moshimoshi
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} bash /root/run-scripts/bootstrap-build.sh
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} bash /root/run-scripts/package-add.sh
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} koji grant-permission repo user
+  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- koji moshimoshi
+  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- bash /root/run-scripts/bootstrap-build.sh
+  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- bash /root/run-scripts/package-add.sh
+  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- koji grant-permission repo user
 
   sleep 5
 
