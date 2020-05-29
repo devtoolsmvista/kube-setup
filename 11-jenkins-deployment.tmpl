@@ -51,7 +51,7 @@ spec:
               fieldRef:
                 fieldPath: status.podIP
           - name: DISTRO_APP_BRANCH
-            value: "${COMMON_BUILD_BRANCH}"
+            value: "${APP_BUILD_BRANCHES}"
           - name: DISTRO_COMMON_BRANCH
             value: "${COMMON_BUILD_BRANCH}"
           volumeMounts:

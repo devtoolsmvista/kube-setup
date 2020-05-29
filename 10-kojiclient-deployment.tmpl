@@ -34,6 +34,8 @@ spec:
             value: ${KOJI_MOCK}
           - name: KOJI_SCMS
             value: ${KOJI_SCMS}
+          - name: CENTOS_MINOR_RELEASE
+            value: "${CENTOS_MINOR_RELEASE}"
           volumeMounts:
           - mountPath: /opt/koji-clients
             name: kojihub-config
