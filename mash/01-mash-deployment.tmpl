@@ -30,10 +30,6 @@ spec:
               cpu: "1"
             requests:
               cpu: "0.5"
-          securityContext:
-            privileged: true
-            capabilities:
-              add: ["SYS_ADMIN"]
           ports:
             - name: http-port
               containerPort: 80
@@ -52,6 +48,13 @@ spec:
             name: srv
           - mountPath: /builds
             name: builds
+          - mountPath: /tmp
+            name: tmp-volume
+          - mountPath: /run
+            name: run-volume
+          - mountPath: /sys/fs/cgroup
+            name: cgroup-volume
+            readOnly: true
       volumes:
       - name: kojihub-config
         hostPath:
@@ -65,4 +68,12 @@ spec:
         hostPath:
            path: /builds/centos7/release/centos-7.6
            type: Directory
+      - name: cgroup-volume
+        hostPath:
+           path: /sys/fs/cgroup
+           type: Directory
+      - name: tmp-volume
+        emptyDir: {}
+      - name: run-volume
+        emptyDir: {}
       restartPolicy: Always
