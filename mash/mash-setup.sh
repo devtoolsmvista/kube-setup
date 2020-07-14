@@ -23,6 +23,11 @@ if ! ping $MIRROR_HOST_IP -c 1 >/dev/null 2>/dev/null; then
     echo "if ping does not work, it won't work in the container and will fail to start"
     exit 1
 fi
+if [ -z "$MASH_INGRESS_HOSTNAME" ] ; then
+    MASH_INGRESS_HOSTNAME="mash.localhost"
+    export MASH_INGRESS_HOSTNAME=${MASH_INGRESS_HOSTNAME}
+fi
+
 
 cd $TOPDIR
 cd koji-jenkins-setup
@@ -38,5 +43,7 @@ kubectl apply -f ${SCRIPT_DIR}/01-mash-deployment.yaml
 
 #cat ${SCRIPT_DIR}/01-mash-deployment.tmpl | KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst | kubectl apply -f -
 kubectl apply -f ${SCRIPT_DIR}/02-mash-service.yaml
-kubectl apply -f ${SCRIPT_DIR}/03-mash-ingress.yaml
+#kubectl apply -f ${SCRIPT_DIR}/03-mash-ingress.yaml
+cat ${SCRIPT_DIR}/03-mash-ingress.tmpl | MASH_INGRESS_HOSTNAME="${MASH_INGRESS_HOSTNAME}" envsubst | kubectl apply -f -
+
 

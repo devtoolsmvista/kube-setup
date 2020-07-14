@@ -49,6 +49,8 @@ spec:
           - configMapRef:
               name: kojihub-config
           env:
+          - name: KOJIHUB_INGRESS_HOSTNAME
+            value: ${KOJIHUB_INGRESS_HOSTNAME}
           - name: KOJI_DB
             valueFrom:
               fieldRef:

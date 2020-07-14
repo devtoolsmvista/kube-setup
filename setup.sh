@@ -29,6 +29,14 @@ if [ -z "$COLLECTIVE_HOST_IP" ] ; then
     export COLLECTIVE_HOST_IP=${COLLECTIVE_HOST_IP}
 fi
 
+if [ -z "$KOJIHUB_INGRESS_HOSTNAME" ] ; then
+    KOJIHUB_INGRESS_HOSTNAME="$(hostname -s)"
+    export KOJIHUB_INGRESS_HOSTNAME=${KOJIHUB_INGRESS_HOSTNAME}
+fi
+if [ -z "$JENKINS_INGRESS_HOSTNAME" ] ; then
+    JENKINS_INGRESS_HOSTNAME="jenkins.localhost"
+    export JENKINS_INGRESS_HOSTNAME=${JENKINS_INGRESS_HOSTNAME}
+fi
 
 if ! ping $HOST -c 1 >/dev/null 2>/dev/null; then
     echo "$HOST does not appear to be reachable from this machine."
@@ -150,7 +158,7 @@ startup_koji_hub () {
   done
 
   # setup koji-hub ingress controller
-  cat ${SCRIPT_DIR}/07-kojihub-ingress.tmpl | KOJIHUB_INGRESS_HOSTNAME="$(hostname -s)" envsubst | kubectl apply -f -
+  cat ${SCRIPT_DIR}/07-kojihub-ingress.tmpl | KOJIHUB_INGRESS_HOSTNAME="${KOJIHUB_INGRESS_HOSTNAME}" envsubst | kubectl apply -f -
   # dynamically get koji host ip
   KOJI_HUB_HOST_IP="$(kubectl get pods -o wide |grep koji-hub | awk '{print $6}')"
 
@@ -221,7 +229,9 @@ startup_jenkins_container () {
   kubectl apply -f ${SCRIPT_DIR}/11-jenkins-deployment.yaml
   sleep 10
   kubectl apply -f ${SCRIPT_DIR}/12-jenkins-service.yaml
-  kubectl apply -f ${SCRIPT_DIR}/13-nginx-jenkins-ingress.yaml
+  #kubectl apply -f ${SCRIPT_DIR}/13-nginx-jenkins-ingress.yaml
+  cat ${SCRIPT_DIR}/13-nginx-jenkins-ingress.tmpl | JENKINS_INGRESS_HOSTNAME="${JENKINS_INGRESS_HOSTNAME}" envsubst | kubectl apply -f -
+
 }
 
 

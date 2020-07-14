@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jenkins-ingress
+  labels:
+    app: koji
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: ${JENKINS_INGRESS_HOSTNAME}
+    http:
+      paths:
+      - backend:
+          serviceName: jenkins-service
+          servicePort: 8080
+
