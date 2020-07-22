@@ -34,6 +34,8 @@ spec:
             value: ${KOJI_MOCK}
           - name: KOJI_SCMS
             value: ${KOJI_SCMS}
+          - name: CENTOS_MAJOR_RELEASE
+            value: "${CENTOS_MAJOR_RELEASE}"
           - name: CENTOS_MINOR_RELEASE
             value: "${CENTOS_MINOR_RELEASE}"
           volumeMounts:
@@ -41,8 +43,8 @@ spec:
             name: kojihub-config
           - mountPath: /root/run-scripts
             name: runscripts
-          - mountPath: /builds
-            name: builds
+#          - mountPath: /builds
+#            name: builds
       volumes:
       - name: kojihub-config
         persistentVolumeClaim:
@@ -51,8 +53,8 @@ spec:
         hostPath:
            path: ${TOPDIR}/koji-jenkins-setup/run-scripts2
            type: Directory
-      - name: builds
-        hostPath:
-           path: /builds/centos7/release/centos-7.6
-           type: Directory
+#      - name: builds
+#        hostPath:
+#           path: /builds/centos7/release/centos-7.6
+#           type: Directory
       restartPolicy: Always

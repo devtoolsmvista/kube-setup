@@ -3,7 +3,7 @@
 set -xe
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 TOPDIR=/tmp/koji-setup
-KOJI_JENKINS_SETUP_REPO=git://gitcentos.mvista.com/centos/upstream/docker/koji-jenkins-setup.git
+KOJI_JENKINS_SETUP_REPO=" -b samsung git://gitcentos.mvista.com/centos/upstream/docker/koji-jenkins-setup.git"
 
 
 if [ -z "$HOST" ] ; then
@@ -170,11 +170,13 @@ startup_koji_hub () {
 bootstrap_build_in_koji_client_container() {
   mkdir -p $TOPDIR/koji-jenkins-setup/run-scripts2
   cp $TOPDIR/koji-jenkins-setup/run-scripts/* $TOPDIR/koji-jenkins-setup/run-scripts2
-  sed -i $TOPDIR/koji-jenkins-setup/run-scripts2/bootstrap-build.sh -e 's,$TOPDIR/run-scripts/fetch-previous.sh, ,'
+  #sed -i $TOPDIR/koji-jenkins-setup/run-scripts2/bootstrap-build.sh -e 's,$TOPDIR/run-scripts/fetch-previous.sh, ,'
+  sed -i $TOPDIR/koji-jenkins-setup/run-scripts2/bootstrap-build.sh -e 's,koji add-external-repo,koji add-external-repo -m bare ,'
 
   echo "${KOJI_HUB_HOST_IP}"
 
-  CENTOS_MINOR_RELEASE=${CENTOS_MINOR_RELEASE} TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
+  CENTOS_MAJOR_RELEASE=${CENTOS_MAJOR_RELEAS} CENTOS_MINOR_RELEASE=${CENTOS_MINOR_RELEASE} TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
+  TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
   kubectl apply -f ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
   sleep 30
   KOJI_CLIENT_POD_NAME="$(kubectl get pods -o wide |grep koji-client  | awk '{print $1}')"
