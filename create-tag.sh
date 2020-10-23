@@ -70,9 +70,6 @@ bootstrap_build_in_koji_client_container() {
   sleep 30
   KOJI_CLIENT_POD_NAME="$(kubectl get pods -o wide |grep koji-client  | awk '{print $1}')"
   kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- koji moshimoshi
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- env | grep CENTOS_MAJOR_RELEASE
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- env | grep CENTOS_MINOR_RELEASE
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- env | grep CENTOS_SUFFIX
   kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- bash /root/run-scripts/bootstrap-build.sh
 
   sleep 5
