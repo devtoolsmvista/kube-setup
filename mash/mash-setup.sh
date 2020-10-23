@@ -24,7 +24,7 @@ if ! ping $MIRROR_HOST_IP -c 1 >/dev/null 2>/dev/null; then
     exit 1
 fi
 if [ -z "$MASH_INGRESS_HOSTNAME" ] ; then
-    MASH_INGRESS_HOSTNAME="mash.localhost"
+    MASH_INGRESS_HOSTNAME="$(hostname -s).mash"
     export MASH_INGRESS_HOSTNAME=${MASH_INGRESS_HOSTNAME}
 fi
 
