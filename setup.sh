@@ -3,7 +3,7 @@
 set -xe
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 TOPDIR=/tmp/koji-setup
-KOJI_JENKINS_SETUP_REPO=" -b samsung git://gitcentos.mvista.com/centos/upstream/docker/koji-jenkins-setup.git"
+KOJI_JENKINS_SETUP_REPO=" -b combined git://gitcentos.mvista.com/centos/upstream/docker/koji-jenkins-setup.git"
 
 
 if [ -z "$HOST" ] ; then
@@ -175,14 +175,13 @@ bootstrap_build_in_koji_client_container() {
 
   echo "${KOJI_HUB_HOST_IP}"
 
-  CENTOS_MAJOR_RELEASE=${CENTOS_MAJOR_RELEAS} CENTOS_MINOR_RELEASE=${CENTOS_MINOR_RELEASE} TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
+  CENTOS_MAJOR_RELEASE=${CENTOS_MAJOR_RELEAS} CENTOS_MINOR_RELEASE=${CENTOS_MINOR_RELEASE} CENTOS_SUFFIX=${CENTOS_SUFFIX} TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
   TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
   kubectl apply -f ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
   sleep 30
   KOJI_CLIENT_POD_NAME="$(kubectl get pods -o wide |grep koji-client  | awk '{print $1}')"
   kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- koji moshimoshi
   kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- bash /root/run-scripts/bootstrap-build.sh
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- bash /root/run-scripts/package-add.sh
   kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- koji grant-permission repo user
 
   sleep 5
@@ -227,7 +226,8 @@ EOF
 startup_jenkins_container () {
 
   echo "${KOJI_HUB_HOST_IP}"
-  KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/11-jenkins-deployment.tmpl > ${SCRIPT_DIR}/11-jenkins-deployment.yaml
+  source run-scripts/parameters.sh
+  APP_BUILD_BRANCHES=${APP_BUILD_BRANCHES} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/11-jenkins-deployment.tmpl > ${SCRIPT_DIR}/11-jenkins-deployment.yaml
   kubectl apply -f ${SCRIPT_DIR}/11-jenkins-deployment.yaml
   sleep 10
   kubectl apply -f ${SCRIPT_DIR}/12-jenkins-service.yaml

@@ -42,6 +42,10 @@ spec:
                 fieldPath: metadata.name
           - name: KOJI_SCMS
             value: ${KOJI_SCMS}
+          - name: KOJI_BUILDER_MAXJOBS
+            value: "4"
+          - name: KOJI_BUILDER_CAPACITY
+            value: "4"
           volumeMounts:
           - mountPath: /var/lib/mock
             name: koji-mock

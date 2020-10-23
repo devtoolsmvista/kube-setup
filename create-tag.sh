@@ -21,7 +21,9 @@ if [ -z "$COLLECTIVE_HOST_IP" ] ; then
 fi
 CENTOS_MAJOR_RELEASE="7"
 CENTOS_MINOR_RELEASE="6"
-while getopts 'm:i:' OPTION; do
+CENTOS_SUFFIX=""
+CONF=""
+while getopts 'm:i:s:c:' OPTION; do
     case "$OPTION" in
       m)
         CENTOS_MAJOR_RELEASE=$OPTARG
@@ -31,9 +33,17 @@ while getopts 'm:i:' OPTION; do
         CENTOS_MINOR_RELEASE=$OPTARG
         echo "Setting CENTOS_MINOR_RELEASE=$CENTOS_MINOR_RELEASE"
         ;;
+      s)
+        CENTOS_SUFFIX=$OPTARG
+        echo "Setting CENTOS_SUFFIX=$CENTOS_SUFFIX"
+        ;;
+      c)
+        CONF=$OPTARG
+        echo "Setting CONF=$CONF"
+        ;;
       ?)
-        echo "usage: $(basename $0) [-m <7|8>] [-i <5|6|7>]" >& 2
-        echo "use option(s) to set -m CENTOS_MAJOR_RELEASE -i  CENTOS_MINOR_RELEASE" >& 2
+        echo "usage: $(basename $0) [-m <centos major release>] [-i <centos minor release>] [-s <centos suffix] [-c <conf>]" >& 2
+        echo "use option(s) to set -m CENTOS_MAJOR_RELEASE -i  CENTOS_MINOR_RELEASE -s CENTOS_SUFFIX -c CONF" >& 2
         exit 1
         ;;
     esac
@@ -50,8 +60,11 @@ bootstrap_build_in_koji_client_container() {
   echo "KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP}"
   echo "CENTOS_MAJOR_RELEASE=${CENTOS_MAJOR_RELEASE}"
   echo "CENTOS_MINOR_RELEASE=${CENTOS_MINOR_RELEASE}"
+  echo "CENTOS_SUFFIX=${CENTOS_SUFFIX}"
+  echo "APP_BUILD_BRANCHES=${APP_BUILD_BRANCHES}"
+  echo "CONF=${CONF}"
 
-  CENTOS_MAJOR_RELEASE=${CENTOS_MAJOR_RELEASE} CENTOS_MINOR_RELEASE=${CENTOS_MINOR_RELEASE} TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
+  CONF=${CONF} CENTOS_SUFFIX=${CENTOS_SUFFIX} CENTOS_MAJOR_RELEASE=${CENTOS_MAJOR_RELEASE} CENTOS_MINOR_RELEASE=${CENTOS_MINOR_RELEASE} TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
 
   kubectl apply -f ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
   sleep 30
@@ -59,6 +72,7 @@ bootstrap_build_in_koji_client_container() {
   kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- koji moshimoshi
   kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- env | grep CENTOS_MAJOR_RELEASE
   kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- env | grep CENTOS_MINOR_RELEASE
+  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- env | grep CENTOS_SUFFIX
   kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- bash /root/run-scripts/bootstrap-build.sh
 
   sleep 5
