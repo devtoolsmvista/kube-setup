@@ -28,30 +28,35 @@ function create_tag(){
     CONF=$4
   fi 
   source $TOPDIR/koji-jenkins-setup/run-scripts/parameters.sh
-  echo "-----------------------------------------------------------"
-  echo "CENTOS_SUFFIX=${CENTOS_SUFFIX}"
-  echo "CENTOS_MINOR_RELEASE=${CENTOS_MINOR_RELEASE}"
-  echo "CENTOS_MAJOR_RELEASE=${CENTOS_MAJOR_RELEASE}"
-  echo "APP_BUILD_BRANCHES=${APP_BUILD_BRANCHES}"
-  echo "COMMON_BUILD_BRANCH=${COMMON_BUILD_BRANCH}"
-  echo "CONF=${CONF}"
-  echo "-----------------------------------------------------------"
 
   KOJI_JENKINS_HOST_IP="$(kubectl get pods -o wide |grep koji-jenkins | awk '{print $6}')"
   echo "KOJI_JENKINS_HOST_IP=${KOJI_JENKINS_HOST_IP}"
 
-
   HOST=${KOJI_JENKINS_HOST_IP} $TOPDIR/koji-jenkins-setup/run-scripts/checkinitStart.sh
   HOST=${KOJI_JENKINS_HOST_IP} $TOPDIR/koji-jenkins-setup/run-scripts/checkforinitalcheckout.sh
+  while true; do
+    read -p "Are you ready to create (${CENTOS_MAJOR_RELEASE}:${CENTOS_MINOR_RELEASE}:${CENTOS_SUFFIX}) tags? Make sure no failed job creations. [N/y]" yn
+    case $yn in
+      [Yy]* )
+        break;;
+      * )
+        echo "Not ready yet. Waiting for another minute..."
+        sleep 60
+        break;;
+    esac
+  done
 
-  if [ ! -z $PREV_APP_BUILD_BRANCHES ]; then
+  if [ -z $PREV_APP_BUILD_BRANCHES ]; then
     #get current DISTRO_APP_BRANCH environment variable from koji-jenkins pod
     KOJI_JENKINS_POD_NAME="$(kubectl get pods -o wide |grep koji-jenkins  | awk '{print $1}')"
-    PREV_APP_BUILD_BRANCHES="$(kubectl exec -it ${KOJI_JENKINS__POD_NAME} -- env | grep DISTRO_APP_BRANCH)"
+    PREV_APP_BUILD_BRANCHES=$(kubectl exec -it ${KOJI_JENKINS_POD_NAME} -- env | grep DISTRO_APP_BRANCH)
+    PREV_APP_BUILD_BRANCHES=$(echo $PREV_APP_BUILD_BRANCHES | dos2unix)
+    PREV_APP_BUILD_BRANCHES=${PREV_APP_BUILD_BRANCHES#"DISTRO_APP_BRANCH="}
+    echo "PREV_APP_BUILD_BRANCHES=${PREV_APP_BUILD_BRANCHES}"
+    sleep 10
   fi
   if [ "$APP_BUILD_BRANCHES" != "$PREV_APP_BUILD_BRANCHES" ]; then
-    echo "APP_BUILD_BRANCHES=${APP_BUILD_BRANCHES}"
-    echo "update environment variable in koji-jenkins"
+    echo "update environment variable DISTRO_APP_BRANCH=${APP_BUILD_BRANCHES} in koji-jenkins"
     kubectl set env deployment koji-jenkins DISTRO_APP_BRANCH="${APP_BUILD_BRANCHES}"
     sleep 60
   fi
@@ -74,13 +79,25 @@ function create_all_tags(){
         create_tag "" "7" 
         create_tag "" "" 
         create_tag "" "8" 
-        create_tag "" "s" "8" "centos-updates-mv-s"
         break;;
       * )
         echo "No selected, will not proceed with tag creation for Nokia";
         break;;
     esac
   done
+  #Streams
+  while true; do
+    read -p "Do you wish to create tags for Stream? [N/y]" yn
+    case $yn in
+      [Yy]* )
+        echo "Creating tags for Stream";
+        create_tag "" "s" "8" "centos-updates-mv-s"
+        break;;
+      * )
+        echo "No selected, will not proceed with tag creation for Stream";
+        break;;
+    esac
+   done
 
   #Ericsson
   while true; do 
