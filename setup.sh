@@ -177,16 +177,19 @@ bootstrap_build_in_koji_client_container() {
 
   CENTOS_MAJOR_RELEASE=${CENTOS_MAJOR_RELEAS} CENTOS_MINOR_RELEASE=${CENTOS_MINOR_RELEASE} CENTOS_SUFFIX=${CENTOS_SUFFIX} TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
   TOPDIR=${TOPDIR} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/10-kojiclient-deployment.tmpl > ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
+  kubectl apply -f ${SCRIPT_DIR}/kojiclient-namespace.yaml
+  cat ${SCRIPT_DIR}/02-kojihub-configmap.tmpl | envsubst | kubectl apply -n kojiclient -f -
+
   kubectl apply -f ${SCRIPT_DIR}/10-kojiclient-deployment.yaml
   sleep 30
-  KOJI_CLIENT_POD_NAME="$(kubectl get pods -o wide |grep koji-client  | awk '{print $1}')"
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- koji moshimoshi
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- bash /root/run-scripts/bootstrap-build.sh
-  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -- koji grant-permission repo user
+  KOJI_CLIENT_POD_NAME="$(kubectl get pods -o wide -n kojiclient |grep koji-client  | awk '{print $1}')"
+  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -n kojiclient -- koji moshimoshi
+  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -n kojiclient -- bash /root/run-scripts/bootstrap-build.sh
+  kubectl exec -it ${KOJI_CLIENT_POD_NAME} -n kojiclient -- koji grant-permission repo user
 
   sleep 5
 
-  kubectl delete deployment koji-client
+  kubectl delete deployment koji-client -n kojiclient
    
   
 }

@@ -2,6 +2,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: koji-client
+  namespace: kojiclient
   labels:
     app: koji
 spec:
@@ -51,8 +52,9 @@ spec:
             name: conf
       volumes:
       - name: kojihub-config
-        persistentVolumeClaim:
-           claimName: kojihubconfig-pv-claim
+        hostPath:
+           path: /koji/config
+           type: Directory
       - name: runscripts
         hostPath:
            path: ${TOPDIR}/koji-jenkins-setup/run-scripts2
