@@ -32,17 +32,14 @@ function create_tag(){
   KOJI_JENKINS_HOST_IP="$(kubectl get pods -o wide |grep koji-jenkins | awk '{print $6}')"
   echo "KOJI_JENKINS_HOST_IP=${KOJI_JENKINS_HOST_IP}"
 
-  HOST=${KOJI_JENKINS_HOST_IP} $TOPDIR/koji-jenkins-setup/run-scripts/checkinitStart.sh
-  HOST=${KOJI_JENKINS_HOST_IP} $TOPDIR/koji-jenkins-setup/run-scripts/checkforinitalcheckout.sh
   while true; do
-    read -p "Are you ready to create (${CENTOS_MAJOR_RELEASE}:${CENTOS_MINOR_RELEASE}:${CENTOS_SUFFIX}) tags? Make sure no failed job creations. [N/y]" yn
+    read -p "Do you want to create (${CENTOS_MAJOR_RELEASE}:${CENTOS_MINOR_RELEASE}:${CENTOS_SUFFIX}) tags? Make sure no failed job creations. [N/y]" yn
     case $yn in
       [Yy]* )
         break;;
       * )
-        echo "Not ready yet. Waiting for another minute..."
-        sleep 60
-        break;;
+        echo "No, skipping this tag."
+        return
     esac
   done
 

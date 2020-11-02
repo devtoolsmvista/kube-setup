@@ -75,8 +75,6 @@ bootstrap_build_in_koji_client_container() {
   sleep 5
 
   kubectl delete deployment koji-client
-  # restart jenkins master so it will create jobs for the new tag
-  kubectl rollout restart deployment/koji-jenkins
   
 }
 
