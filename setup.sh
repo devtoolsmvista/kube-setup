@@ -157,6 +157,17 @@ startup_koji_hub () {
 	sleep 10 
   done
 
+
+  SECRET_NAME="tls-secret"
+  delete_secret ${SECRET_NAME}
+  kubectl create secret tls ${SECRET_NAME} --key /koji/saved/etc/pki/koji/private/kojihub.key  --cert /koji/saved/etc/pki/koji/certs/kojihub.crt
+
+  cp /koji/saved/etc/pki/koji/koji_ca_cert.crt ca.crt
+  delete_secret "ca-secret"
+  kubectl create secret generic ca-secret --from-file=ca.crt
+  rm -rf ca.crt
+
+
   # setup koji-hub ingress controller
   cat ${SCRIPT_DIR}/07-kojihub-ingress.tmpl | KOJIHUB_INGRESS_HOSTNAME="${KOJIHUB_INGRESS_HOSTNAME}" envsubst | kubectl apply -f -
   # dynamically get koji host ip
@@ -236,6 +247,15 @@ startup_jenkins_container () {
   kubectl apply -f ${SCRIPT_DIR}/12-jenkins-service.yaml
   #kubectl apply -f ${SCRIPT_DIR}/13-nginx-jenkins-ingress.yaml
   cat ${SCRIPT_DIR}/13-nginx-jenkins-ingress.tmpl | JENKINS_INGRESS_HOSTNAME="${JENKINS_INGRESS_HOSTNAME}" envsubst | kubectl apply -f -
+
+}
+delete_secret(){
+  secret_name=$1
+  SECRET_EXISTS="$(kubectl get secret | grep $secret_name | awk '{print $1}')"
+  if [ "$secret_name" == "$SECRET_EXISTS" ]; then
+    echo "Secret $Ssecret_name exists, delete it first"
+    kubectl delete secret $secret_name
+  fi
 
 }
 

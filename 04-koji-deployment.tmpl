@@ -51,6 +51,10 @@ spec:
           env:
           - name: KOJIHUB_INGRESS_HOSTNAME
             value: ${KOJIHUB_INGRESS_HOSTNAME}
+          - name: ADDITIONAL_SAN
+            value: ${KOJIHUB_INGRESS_HOSTNAME}
+          - name: ADDITIONAL_SAN_IP
+            value: ${HOST_IP}
           - name: KOJI_DB
             valueFrom:
               fieldRef:

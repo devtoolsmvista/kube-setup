@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: kojihub-ingress
@@ -6,12 +6,24 @@ metadata:
     app: koji
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "optional_no_ca"
+    nginx.ingress.kubernetes.io/auth-tls-secret: "default/ca-secret"
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "10"
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+
 spec:
+  tls:
+  - hosts:
+    - ${KOJIHUB_INGRESS_HOSTNAME}
+    secretName: tls-secret
   rules:
   - host: ${KOJIHUB_INGRESS_HOSTNAME}
     http:
       paths:
-      - backend:
-          serviceName: kojihub-service
-          servicePort: 80
-
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kojihub-service
+            port:
+              number: 80

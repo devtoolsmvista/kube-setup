@@ -2,4 +2,4 @@
 10-kojiclient-deployment.yaml
 11-jenkins-deployment.yaml
 mash/01-mash-deployment.yaml
-
+ca.crt
