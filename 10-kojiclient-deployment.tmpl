@@ -2,6 +2,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: koji-client
+  namespace: kojiclient
   labels:
     app: koji
 spec:
@@ -34,25 +35,38 @@ spec:
             value: ${KOJI_MOCK}
           - name: KOJI_SCMS
             value: ${KOJI_SCMS}
+          - name: CENTOS_MAJOR_RELEASE
+            value: "${CENTOS_MAJOR_RELEASE}"
           - name: CENTOS_MINOR_RELEASE
             value: "${CENTOS_MINOR_RELEASE}"
+          - name: CENTOS_SUFFIX
+            value: "${CENTOS_SUFFIX}"
+          - name: CONF
+            value: "${CONF}"
           volumeMounts:
           - mountPath: /opt/koji-clients
             name: kojihub-config
           - mountPath: /root/run-scripts
             name: runscripts
-          - mountPath: /builds
-            name: builds
+          - mountPath: /root/bin
+            name: rootbinscripts
+          - mountPath: /root/conf
+            name: conf
       volumes:
       - name: kojihub-config
-        persistentVolumeClaim:
-           claimName: kojihubconfig-pv-claim
+        hostPath:
+           path: /koji/config
+           type: Directory
       - name: runscripts
         hostPath:
            path: ${TOPDIR}/koji-jenkins-setup/run-scripts2
            type: Directory
-      - name: builds
+      - name: rootbinscripts
         hostPath:
-           path: /builds/centos7/release/centos-7.6
+           path: ${TOPDIR}/koji-jenkins-setup/bin
+           type: Directory
+      - name: conf
+        hostPath:
+           path: /tmp/koji-setup/koji-jenkins-setup/conf
            type: Directory
       restartPolicy: Always
