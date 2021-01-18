@@ -48,6 +48,8 @@ spec:
             name: kojihub-config
           - mountPath: /root/run-scripts
             name: runscripts
+          - mountPath: /root/bin
+            name: rootbinscripts
           - mountPath: /root/conf
             name: conf
       volumes:
@@ -58,6 +60,10 @@ spec:
       - name: runscripts
         hostPath:
            path: ${TOPDIR}/koji-jenkins-setup/run-scripts2
+           type: Directory
+      - name: rootbinscripts
+        hostPath:
+           path: ${TOPDIR}/koji-jenkins-setup/bin
            type: Directory
       - name: conf
         hostPath:
