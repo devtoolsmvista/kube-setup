@@ -121,6 +121,7 @@ function create_all_tags(){
         create_tag "-sam" "7" 
         create_tag "-sam" "8" 
         create_tag "-sam" "1" "8" 
+        create_tag "-sam" "2" "8" 
         break;;
       * )
         echo "No selected, will not proceed with tag creation for Samsung";
