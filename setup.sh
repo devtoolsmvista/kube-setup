@@ -277,7 +277,13 @@ else
   sleep 3
   cd $TOPDIR/koji-jenkins-setup
   source run-scripts/parameters.sh
+  if [ -d $KOJI_DIR/hosts ] ; then
+    echo "delete old certificates from $KOJI_DIR/hosts"
+    rm -rf $KOJI_DIR/hosts
+  fi
+
   startup_koji_hub
   startup_koji_builder
+  prepare_jenkins
   startup_jenkins_container
 fi
