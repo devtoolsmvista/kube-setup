@@ -6,6 +6,12 @@ metadata:
     app: koji
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      keepalive_timeout 650s;
+      keepalive_requests 10000;
 spec:
   rules:
   - host: ${JENKINS_INGRESS_HOSTNAME}
