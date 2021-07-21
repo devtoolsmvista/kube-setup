@@ -234,7 +234,7 @@ anon_retry = true
 EOF
   sudo mv -f $TOPDIR/config $JENKINS_HOME/.koji/
   cp -a $TOPDIR/koji-jenkins-setup/jenkins/plugins.txt $TOPDIR/koji-jenkins-setup/jenkins/init/* $JENKINS_HOME
-  sudo chown $JENKINS_UID.$JENKINS_UID -R $JENKINS_HOME
+  sudo chown $JENKINS_UID.$JENKINS_UID -R $JENKINS_HOME/.koji
   env | grep BRANCH
 }
 startup_jenkins_container () {
