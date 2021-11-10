@@ -2,7 +2,7 @@
 
 set -xe
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-TOPDIR=/tmp/koji-setup
+TOPDIR=/koji/koji-setup
 KOJI_JENKINS_SETUP_REPO=" -b combined git://gitcentos.mvista.com/centos/upstream/docker/koji-jenkins-setup.git"
 
 
@@ -210,8 +210,8 @@ startup_koji_builder () {
   fi
   echo "${KOJI_HUB_HOST_IP}"
   KOJI_MOCK=${KOJI_MOCK} KOJI_HUB_HOST_IP=${KOJI_HUB_HOST_IP} envsubst < ${SCRIPT_DIR}/09-kojibuilder-deployment.tmpl > ${SCRIPT_DIR}/09-kojibuilder-deployment.yaml
-  kubectl apply -f ${SCRIPT_DIR}/09-kojibuilder-deployment.yaml
-  sleep 30
+  #kubectl apply -f ${SCRIPT_DIR}/09-kojibuilder-deployment.yaml
+  #sleep 30
 }
 prepare_jenkins() {
   echo $JENKINS_HOME

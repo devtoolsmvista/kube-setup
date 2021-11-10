@@ -74,8 +74,7 @@ function create_all_tags(){
         create_tag "" "5" 
         create_tag "" "6" 
         create_tag "" "7" 
-        create_tag "" "" 
-        create_tag "" "8" 
+        create_tag "3" "8" 
         break;;
       * )
         echo "No selected, will not proceed with tag creation for Nokia";
@@ -121,7 +120,7 @@ function create_all_tags(){
         create_tag "-sam" "7" 
         create_tag "-sam" "8" 
         create_tag "-sam" "1" "8" 
-        create_tag "-sam" "2" "8" 
+        create_tag "-sam" "3" "8" 
         break;;
       * )
         echo "No selected, will not proceed with tag creation for Samsung";

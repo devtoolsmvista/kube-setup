@@ -28,7 +28,12 @@ spec:
         - centos7collective.mvista.com
       containers:
         - name: koji-jenkins
-          image: yufenkuo/koji-jenkins:latest
+          image: yufenkuo/koji-jenkins-terra:latest
+          resources:
+            requests:
+              memory: "15G"
+            limits:
+              memory: "15G"
           ports:
             - name: web-interface
               containerPort: 8080

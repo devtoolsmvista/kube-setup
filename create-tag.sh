@@ -2,7 +2,7 @@
 
 set -xe
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-TOPDIR=/tmp/koji-setup
+TOPDIR=/koji/koji-setup
 
 if [ -z "$GIT_HOST_IP" ] ; then
     #GIT_HOST_IP="$(hostname -i)"
